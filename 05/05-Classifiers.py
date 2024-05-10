@@ -27,7 +27,7 @@ df.sample(10)
 counts = df['target'].value_counts()
 fig, ax = plt.subplots()
 ax.pie(counts, autopct='%1.1f%%')
-ax.legend(labels=['0 (Normal)', '1 (Suspect)'], title='Dağılım',loc='lower right')
+ax.legend(labels=['0 (Normal)', '1 (Disease)'], title='Dağılım',loc='lower right')
 ax.set_title(" Dağılım")
 plt.show()
 plt.close()
@@ -49,7 +49,7 @@ y = df['target']
 
 
 
-#Korelasyon
+#Korelasyon, bağımlı değişken ile
 from yellowbrick.target import FeatureCorrelation
 visualizer = FeatureCorrelation(labels=X.columns)
 
@@ -58,7 +58,7 @@ visualizer.show()
 
 
 from sklearn.model_selection import train_test_split
-X_train,X_test,y_train,y_test=train_test_split(X,y,random_state=0,shuffle=True, test_size=0.2)
+X_train,X_test,y_train,y_test=train_test_split(X,y,shuffle=True, test_size=0.25)
 
 
 
@@ -73,14 +73,16 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
 
-rf_clf = KNeighborsClassifier()
+rf_clf = XGBClassifier()
 rf_clf.fit(X_train, y_train)
 rf_pred = rf_clf.predict(X_test)
 
 rf_report = pd.DataFrame(classification_report(y_test, rf_pred, output_dict=True))
+rf_report_train = pd.DataFrame(classification_report(y_train, rf_clf.predict(X_train), output_dict=True))
 
 print(rf_report)
-print(f"Confusion Matrix: \n {confusion_matrix(y_test, rf_pred)}\n")
+print(f"Confusion Matrix (Test): \n {confusion_matrix(y_test, rf_pred)}\n")
+#print(f"Confusion Matrix (Train): \n {confusion_matrix(y_train, rf_clf.predict(X_train))}\n")
 
 
 
@@ -89,8 +91,11 @@ print(f"Confusion Matrix: \n {confusion_matrix(y_test, rf_pred)}\n")
 from sklearn.metrics import roc_curve
 
 tpr_rf, fpr_rf, thresh_rf = roc_curve(y_test, rf_clf.predict_proba(X_test)[:, 1], pos_label = 1)
+tpr_train, fpr_train, thresh_rf = roc_curve(y_train, rf_clf.predict_proba(X_train)[:, 1], pos_label = 1)
 
-plt.plot(tpr_rf, fpr_rf, linestyle = "solid", color = "green", label = "RF")
+
+plt.plot(tpr_rf, fpr_rf, linestyle = "solid", color = "green", label = "Model test")
+plt.plot(tpr_train, fpr_train, linestyle = "solid", color = "red", label = "Model train")
 
 
 
@@ -106,7 +111,7 @@ plt.close()
 #AUC
 from sklearn import metrics
 auc = metrics.roc_auc_score(y_test, rf_clf.predict(X_test))
-print(auc)
+print("AUC",auc)
 
 #from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 #f1_score(y_test, p4, average='weighted')

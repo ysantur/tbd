@@ -80,7 +80,7 @@ params = {"criterion":("gini", "entropy"),
           "min_samples_leaf":list(range(2, 15))
           }
 
-tree_clf = DecisionTreeClassifier(random_state=42)
+tree_clf = DecisionTreeClassifier()
 tree_cv = GridSearchCV(tree_clf, params, scoring="accuracy", n_jobs=-1, verbose=1, cv=5)
 tree_cv.fit(X_train, y_train)
 best_params = tree_cv.best_params_
